@@ -1,10 +1,30 @@
 import React, { useState, useCallback } from 'react';
-import { Container, Title, Text, Button, Group, Paper, Center, Loader } from '@mantine/core';
+import {
+  Container,
+  Title,
+  Text,
+  Button,
+  Group,
+  Paper,
+  Center,
+  Loader,
+  Stack, 
+  Badge, 
+  ScrollArea 
+} from '@mantine/core';
 import { Notifications, notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
 
 import rawFakeAdviceData from './fakeAdvice.json';
 const fakeAdviceData: string[] = rawFakeAdviceData as string[];
+
+
+interface HistoryItem {
+  advice: string;
+  actualIsTrue: boolean;
+  guessedTrue: boolean;
+  correct: boolean;
+}
 
 function App() {
   const [score, setScore] = useState<number>(10);
@@ -14,12 +34,14 @@ function App() {
   const [gameResult, setGameResult] = useState<string | null>(null);
   const [gameStarted, setGameStarted] = useState<boolean>(false);
   const [isLoadingAdvice, setIsLoadingAdvice] = useState<boolean>(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]); 
 
   console.log("App component rendered. Current gameStarted state:", gameStarted, "Score:", score);
 
   const fetchRealAdvice = useCallback(async (): Promise<string> => {
     console.log("fetchRealAdvice: Attempting to fetch real advice...");
     try {
+     
       const resp = await fetch(`https://api.adviceslip.com/advice?timestamp=${Date.now()}`);
 
       console.log("fetchRealAdvice: Fetch response status:", resp.status);
@@ -37,15 +59,15 @@ function App() {
         message: "Failed to fetch advice from API. Displaying fallback advice.",
         color: 'red',
       });
-      return "The true secret is to never give up."; 
+      
+      return "The true secret is to never give up.";
     }
   }, []);
 
   const fetchAndDisplayNextAdvice = useCallback(async () => {
     console.log("fetchAndDisplayNextAdvice: Called for next round.");
     setIsLoadingAdvice(true);
-    const shouldBeTrue = Math.random() < 0.5;
-
+    const shouldBeTrue = Math.random() < 0.5; 
     setCurrentAdvice('Loading advice...'); 
 
     if (shouldBeTrue) {
@@ -65,11 +87,12 @@ function App() {
 
   const startGame = useCallback(async () => {
     console.log("startGame: Initializing new game.");
-    setScore(10);
-    setGameResult(null);
+    setScore(10); 
+    setGameResult(null); 
     setGameOver(false);
-    setGameStarted(true);
-    await fetchAndDisplayNextAdvice();
+    setGameStarted(true); 
+    setHistory([]); 
+    await fetchAndDisplayNextAdvice(); 
     console.log("startGame: Game initialized and first advice loaded.");
   }, [setScore, setGameResult, setGameOver, setGameStarted, fetchAndDisplayNextAdvice]);
 
@@ -77,11 +100,13 @@ function App() {
     console.log("handleGuess: Player guessed:", guessedTrue, "Actual was:", isTrueAdvice, "Current Score:", score);
     if (gameOver) {
       console.log("handleGuess: Game is over, ignoring guess.");
-      return;
+      return; 
     }
 
     let newScore = score;
-    if (guessedTrue === isTrueAdvice) {
+    const correctGuess = (guessedTrue === isTrueAdvice); 
+
+    if (correctGuess) {
       newScore += 1;
       notifications.show({
         title: 'Correct!',
@@ -99,8 +124,20 @@ function App() {
       console.log("handleGuess: Incorrect guess. New score:", newScore);
     }
 
-    setScore(newScore);
+    setScore(newScore); 
 
+    
+    setHistory((prevHistory) => [
+      ...prevHistory,
+      {
+        advice: currentAdvice,
+        actualIsTrue: isTrueAdvice,
+        guessedTrue: guessedTrue,
+        correct: correctGuess,
+      },
+    ]);
+
+    
     if (newScore >= 20) {
       setGameResult("Congratulations! You won!");
       setGameOver(true);
@@ -121,13 +158,13 @@ function App() {
       });
     } else {
       console.log("handleGuess: Game continues. Fetching next advice...");
-      fetchAndDisplayNextAdvice();
+      fetchAndDisplayNextAdvice(); 
     }
-  }, [gameOver, score, isTrueAdvice, setScore, setGameResult, setGameOver, fetchAndDisplayNextAdvice]);
+  }, [gameOver, score, isTrueAdvice, currentAdvice, setScore, setGameResult, setGameOver, fetchAndDisplayNextAdvice]); 
 
   const resetGame = useCallback(() => {
     console.log("resetGame: Called. Starting a new game...");
-    startGame();
+    startGame(); 
   }, [startGame]);
 
   return (
@@ -140,7 +177,8 @@ function App() {
             <Text size="lg" mb="xl">
               Click to start the game!
             </Text>
-            <Button size="lg" onClick={startGame}> 
+           
+            <Button size="lg" onClick={startGame}>
               Start Game
             </Button>
           </Center>
@@ -153,7 +191,8 @@ function App() {
                 <Text size="xl" fw={700} color={score >= 20 ? 'green' : 'red'}>
                   {gameResult}
                 </Text>
-                <Button size="lg" onClick={resetGame} mt="md"> 
+
+                <Button size="lg" onClick={resetGame} mt="md">
                   Play Again
                 </Button>
               </Center>
@@ -173,20 +212,57 @@ function App() {
 
             {!gameOver && !isLoadingAdvice && (
               <Group justify="center" gap="xl">
-                <Button size="lg" color="green" onClick={() => handleGuess(true)}> 
+               
+                <Button size="lg" color="green" onClick={() => handleGuess(true)}>
                   True Advice
                 </Button>
-                <Button size="lg" color="red" onClick={() => handleGuess(false)}> 
+              
+                <Button size="lg" color="red" onClick={() => handleGuess(false)}>
                   Fake Advice
                 </Button>
               </Group>
             )}
+
+          
+            {gameStarted && history.length > 0 && gameOver && ( 
+              <Paper shadow="xs" p="xl" withBorder mt="xl" style={{ textAlign: 'left' }}>
+                <Title order={2} mb="md">Game History</Title>
+                <ScrollArea h={250} type="always"> 
+                  <Stack>
+                    {history.map((item, index) => (
+                      <Group
+                        key={index}
+                        justify="space-between"
+                        align="center"
+                        style={{ borderBottom: '1px solid #eee', paddingBottom: '8px', paddingTop: '8px' }}
+                      >
+                        <Text size="sm" style={{ flex: 1, fontStyle: 'italic', marginRight: '10px' }}>
+                          "{item.advice}"
+                        </Text>
+                        <Group gap="xs">
+                         
+                          <Badge color={item.actualIsTrue ? 'green' : 'red'} variant="filled">
+                            {item.actualIsTrue ? 'TRUE' : 'FAKE'}
+                          </Badge>
+                         
+                          <Badge color={item.correct ? 'blue' : 'gray'} variant="filled">
+                            {item.correct ? 'Correct Guess' : 'Incorrect Guess'}
+                          </Badge>
+                        </Group>
+                      </Group>
+                    ))}
+                  </Stack>
+                </ScrollArea>
+              </Paper>
+            )}
           </>
         )}
       </Paper>
+      
       <Notifications position="top-right" />
     </Container>
   );
 }
 
 export default App;
+

@@ -75,12 +75,12 @@ As requested in the test, I have implemented the following bonus features to enh
 * **UX Feedback (Notifications):** Implemented Mantine's `notifications` to provide immediate, clear visual feedback to the user after each guess (Correct/Incorrect) and upon winning or losing the game. An error notification is also displayed if the API call fails.
 * **Loading Indicator:** A `Loader` component from Mantine is displayed while `fetchRealAdvice` is in progress, providing a clear visual cue to the user that advice is being fetched.
 * **Replay Button:** A "Play Again" button is displayed at the end of the game (win or lose) to easily restart.
+* **Display Game History:** At the end of the game (win or lose), a history of all advice presented during that game session is displayed below the final result. Each entry in the history clearly shows:
+  * The advice text itself.
+  * Whether the advice was actually **TRUE** or **FAKE**.
+  * Whether the player's guess for that advice was **Correct** or **Incorrect**.
+  This section is scrollable to accommodate longer games, ensuring all past advice can be reviewed.
 
-## Areas for Improvement / Next Steps
-
-Given more time, I would focus on implementing the following enhancements:
-
-1. **Display Game History:** Implement a feature to show the history of previously displayed advice, indicating whether each was real or fake, and the player's guess for it. This would involve storing past rounds in a state variable (e.g., an array of objects) and rendering them, potentially in a scrollable list.
-2. **Further UX Enhancements:** While immediate notifications and a loading indicator are integrated, additional animations (e.g., for score changes, game transitions) could further enhance the dynamic feel of the application.
-3. **Theming:** Explore Mantine's comprehensive theming capabilities to introduce a custom color palette or dark mode toggle for a more polished look and feel.
-4. **Responsiveness:** Further refine the layout and styling for optimal display across various screen sizes (mobile, tablet, desktop).
+1.**Further UX Enhancements:** While immediate notifications and a loading indicator are integrated, additional animations (e.g., for score changes, game transitions) could further enhance the dynamic feel of the application.
+2.**Theming:** Explore Mantine's comprehensive theming capabilities to introduce a custom color palette or dark mode toggle for a more polished look and feel.
+3.**Responsiveness:** Further refine the layout and styling for optimal display across various screen sizes (mobile, tablet, desktop).

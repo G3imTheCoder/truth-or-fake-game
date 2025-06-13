@@ -1,46 +1,86 @@
-# Getting Started with Create React App
+# Truth or Fake? - Technical Test for Base for Music
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is an interactive mini-game developed as a technical test for Base for Music. The game challenges the player to distinguish between real "life advice" fetched from a public API and fake advice generated locally.
 
-## Available Scripts
+## Technologies Used
 
-In the project directory, you can run:
+*React:** A JavaScript library for building user interfaces.
+**TypeScript:** A typed superset of JavaScript that compiles to plain JavaScript, enhancing code quality and developer experience.
+**Mantine:** A comprehensive React components library with a focus on usability, accessibility, and customization.
+**Advice Slip JSON API:** A public API (`https://api.adviceslip.com/advice`) used to fetch authentic advice.
 
-### `npm start`
+## Game Rules
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+  The player starts with 10 points.
+  The game begins with a "Start Game" button. Once clicked, the first piece of advice is displayed.
+  In each round, a piece of advice is displayed. This advice is either real (from the API) or fake (from a local list), chosen randomly.
+  The player must guess if the advice is "True Advice" or "Fake Advice".
+  **Scoring:** Correct guess: +1 point.  * Incorrect guess: -1 point.
+  **Win Condition:** Reach 20 points.
+  **Lose Condition:** Score drops to 0 points.
+  A "Play Again" button appears when the game ends.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Installation and Launch Instructions
 
-### `npm test`
+To set up and run the project locally, follow these steps:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. **Clone the repository:**
 
-### `npm run build`
+    ```bash
+    git clone https://github.com/G3imTheCoder/truth-or-fake-game.git
+    cd truth-or-fake-game
+    ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+2. **Install dependencies:**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    ```bash
+    npm install
+    ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    This command will install all the necessary React, TypeScript, and Mantine packages, including `@mantine/notifications`.
 
-### `npm run eject`
+3. **Start the development server:**
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+    ```bash
+    npm start
+    ```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+    This will open the application in your default web browser at `http://localhost:3000`.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Technical Architecture
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+The application is structured as a single-page application (SPA) using React.
 
-## Learn More
+* **`src/App.tsx`:** This is the main component of the application. It manages the core game logic and state:
+  * `score`: Tracks the player's current score.
+  * `currentAdvice`: Stores the advice displayed in the current round.
+  * `isTrueAdvice`: A boolean indicating if `currentAdvice` is genuine or fake.
+  * `gameOver`, `gameResult`: Control the game's end state and display messages.
+  * `gameStarted`: Controls the visibility of the initial "Start Game" screen.
+  * `isLoadingAdvice`: Controls the display of a loading indicator during API calls.
+  * **Functions:**
+    * `fetchRealAdvice`: An asynchronous function (`useCallback` memoized) responsible for making API calls to `https://api.adviceslip.com/advice`. It includes a timestamp parameter to ensure fresh advice is fetched each time and handles potential API errors with a fallback.
+    * `fetchAndDisplayNextAdvice`: An asynchronous function (`useCallback` memoized) that randomly decides whether to fetch real or fake advice, updates the `currentAdvice` and `isTrueAdvice` states, and manages the `isLoadingAdvice` state.
+    * `startGame`: Initializes a new game (resets score, clears results, sets game started) and then calls `fetchAndDisplayNextAdvice` to load the first advice.
+    * `handleGuess`: Processes the player's guess, updates the `score`, and checks for win/loss conditions. It then triggers `fetchAndDisplayNextAdvice` for the next round or sets the game to over.
+    * `resetGame`: Resets all game-related states by calling `startGame` to begin a new game.
+  * **Hooks:** `useState` is used for managing component-specific state. `useCallback` is used to memoize functions (`fetchRealAdvice`, `fetchAndDisplayNextAdvice`, `startGame`, `handleGuess`, `resetGame`) for performance optimization and to prevent unnecessary re-renders, adhering to React Hooks best practices.
+* **`src/index.tsx`:** The entry point of the React application. It wraps the `App` component with `MantineProvider` to enable Mantine UI components and ensures Mantine's base styles (`@mantine/core/styles.css`) are imported.
+* **`src/fakeAdvice.json`:** A local JSON file containing an array of handcrafted fake advice messages in English, fulfilling the project's data requirements. It's imported into `App.tsx` and used as a source for fake advice.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Implemented Bonus Features
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+As requested in the test, I have implemented the following bonus features to enhance the user experience:
+
+* **UX Feedback (Notifications):** Implemented Mantine's `notifications` to provide immediate, clear visual feedback to the user after each guess (Correct/Incorrect) and upon winning or losing the game. An error notification is also displayed if the API call fails.
+* **Loading Indicator:** A `Loader` component from Mantine is displayed while `fetchRealAdvice` is in progress, providing a clear visual cue to the user that advice is being fetched.
+* **Replay Button:** A "Play Again" button is displayed at the end of the game (win or lose) to easily restart.
+
+## Areas for Improvement / Next Steps
+
+Given more time, I would focus on implementing the following enhancements:
+
+1. **Display Game History:** Implement a feature to show the history of previously displayed advice, indicating whether each was real or fake, and the player's guess for it. This would involve storing past rounds in a state variable (e.g., an array of objects) and rendering them, potentially in a scrollable list.
+2. **Further UX Enhancements:** While immediate notifications and a loading indicator are integrated, additional animations (e.g., for score changes, game transitions) could further enhance the dynamic feel of the application.
+3. **Theming:** Explore Mantine's comprehensive theming capabilities to introduce a custom color palette or dark mode toggle for a more polished look and feel.
+4. **Responsiveness:** Further refine the layout and styling for optimal display across various screen sizes (mobile, tablet, desktop).

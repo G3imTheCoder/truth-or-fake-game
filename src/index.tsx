@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css'; // Keep this for general styles
-import App from './App'; // Your App component
+import './index.css'; 
+import App from './App'; 
 import reportWebVitals from './reportWebVitals';
 import { MantineProvider, createTheme } from '@mantine/core'; 
 import '@mantine/core/styles.css'; 
